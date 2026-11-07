@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+// import { useForm } from 'react-hook-form'
+// import { zodResolver } from '@hookform/resolvers/zod'
+import { Check, Copy, KeyRound, X } from 'lucide-react'
 import {
   getApiErrorMessage,
   getUsers,
@@ -14,10 +15,10 @@ import {
   updateUser,
   type WorkspaceTree,
 } from '../../../services/workspaceApi'
-import {
-  createAccountSchema,
-  type CreateAccountFormData,
-} from '../schemas/workspaceSchemas'
+// import {
+//   createAccountSchema,
+//   type CreateAccountFormData,
+// } from '../schemas/workspaceSchemas'
 
 type UserRole = 'User' | 'Contributor' | 'Admin' | 'Super Admin'
 
@@ -82,6 +83,12 @@ export function PeopleRolesCard() {
   const [successNotice, setSuccessNotice] = useState<string | null>(null)
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [isSuperAdmin, setIsSuperAdmin] = useState(false)
+  const [resetTarget, setResetTarget] = useState<UserRoleItem | null>(null)
+  const [resetResult, setResetResult] = useState<{
+    name: string
+    password: string
+  } | null>(null)
+  const [copiedPassword, setCopiedPassword] = useState(false)
 
   useEffect(() => {
     let isMounted = true
@@ -126,34 +133,34 @@ export function PeopleRolesCard() {
     }
   }, [])
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<CreateAccountFormData>({
-    resolver: zodResolver(createAccountSchema),
-    defaultValues: {
-      fullName: '',
-      email: '',
-      temporaryPassword: '',
-      role: 'USER',
-    },
-  })
+  // const {
+  //   register,
+  //   handleSubmit,
+  //   reset,
+  //   formState: { errors, isSubmitting },
+  // } = useForm<CreateAccountFormData>({
+  //   resolver: zodResolver(createAccountSchema),
+  //   defaultValues: {
+  //     fullName: '',
+  //     email: '',
+  //     temporaryPassword: '',
+  //     role: 'USER',
+  //   },
+  // })
 
-  const onSubmit = async (data: CreateAccountFormData) => {
-    setActionError(null)
-    setSuccessNotice(
-      `Accounts are created by approving membership requests. Approve the request for "${data.fullName}" in the Membership requests section above.`,
-    )
-    reset({
-      fullName: '',
-      email: '',
-      temporaryPassword: '',
-      role: 'USER',
-    })
-    setTimeout(() => setSuccessNotice(null), 8000)
-  }
+  // const onSubmit = async (data: CreateAccountFormData) => {
+  //   setActionError(null)
+  //   setSuccessNotice(
+  //     `Accounts are created by approving membership requests. Approve the request for "${data.fullName}" in the Membership requests section above.`,
+  //   )
+  //   reset({
+  //     fullName: '',
+  //     email: '',
+  //     temporaryPassword: '',
+  //     role: 'USER',
+  //   })
+  //   setTimeout(() => setSuccessNotice(null), 8000)
+  // }
 
   const syncPermissions = async () => {
     const me = await refreshCurrentUser()
@@ -241,22 +248,46 @@ export function PeopleRolesCard() {
     }
   }
 
-  const handleResetPassword = async (user: UserRoleItem) => {
+  const requestResetPassword = (user: UserRoleItem) => {
     setActionError(null)
-    setProcessingId(user.id)
+    setResetTarget(user)
+  }
+
+  const confirmResetPassword = async () => {
+    if (!resetTarget) return
+    const target = resetTarget
+    setActionError(null)
+    setProcessingId(target.id)
     try {
-      const result = await resetUserPassword(user.id)
-      setSuccessNotice(
-        result.temporaryPassword
-          ? `Temporary password for ${user.name}: ${result.temporaryPassword}`
-          : `A temporary password was generated for ${user.name}.`,
-      )
-      setTimeout(() => setSuccessNotice(null), 10000)
+      const result = await resetUserPassword(target.id)
+      if (result.temporaryPassword) {
+        setResetResult({
+          name: target.name,
+          password: result.temporaryPassword,
+        })
+        setCopiedPassword(false)
+      } else {
+        setSuccessNotice(`A temporary password was generated for ${target.name}.`)
+        setTimeout(() => setSuccessNotice(null), 10000)
+      }
+      setResetTarget(null)
     } catch (error) {
       if (isForbiddenError(error)) await syncPermissions()
       setActionError(getApiErrorMessage(error))
+      setResetTarget(null)
     } finally {
       setProcessingId(null)
+    }
+  }
+
+  const copyPassword = async () => {
+    if (!resetResult) return
+    try {
+      await navigator.clipboard.writeText(resetResult.password)
+      setCopiedPassword(true)
+      setTimeout(() => setCopiedPassword(false), 2000)
+    } catch {
+      setActionError('Could not copy the password. Please copy it manually.')
     }
   }
 
@@ -295,11 +326,56 @@ export function PeopleRolesCard() {
         </div>
       )}
 
+      {resetResult && (
+        <div className="mb-4 p-4 rounded-xl bg-[#e6efdb] border border-[#bcd2a4] text-[#3e5623]">
+          <div className="flex items-start justify-between gap-2">
+            <span className="text-xs font-bold">
+              New temporary password for {resetResult.name}
+            </span>
+            <button
+              type="button"
+              onClick={() => setResetResult(null)}
+              className="shrink-0 hover:opacity-70"
+              aria-label="Dismiss generated password"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="mt-2.5 flex flex-col sm:flex-row sm:items-center gap-2">
+            <code className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-white/80 border border-[#bcd2a4] text-sm font-mono tracking-wide text-[#1c1a17] break-all">
+              {resetResult.password}
+            </code>
+            <button
+              type="button"
+              onClick={copyPassword}
+              className="shrink-0 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-[#1c1a17] text-[#f5f0e8] hover:opacity-90 transition-colors"
+            >
+              {copiedPassword ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  Copied
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  Copy
+                </>
+              )}
+            </button>
+          </div>
+          <p className="mt-2 text-[11px] leading-relaxed text-[#3e5623]/80">
+            Share this password securely. It stays visible here until you close
+            this notice.
+          </p>
+        </div>
+      )}
+
       {/* Add User Form Row */}
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="mb-6">
-        <div className="flex flex-col md:flex-row md:items-start gap-2">
+      
+      {/* <form onSubmit={handleSubmit(onSubmit)} noValidate className="mb-6">
+        <div className="flex flex-col md:flex-row md:items-start gap-2"> */}
           {/* Full name */}
-          <div className="flex-1 min-w-32.5">
+          {/* <div className="flex-1 min-w-32.5">
             <input
               type="text"
               placeholder="Full name"
@@ -319,10 +395,10 @@ export function PeopleRolesCard() {
             {errors.fullName && (
               <p className="mt-1 text-[10px] text-red-600">{errors.fullName.message}</p>
             )}
-          </div>
+          </div> */}
 
           {/* Email */}
-          <div className="flex-1 min-w-37.5">
+          {/* <div className="flex-1 min-w-37.5">
             <input
               type="email"
               placeholder="Email"
@@ -342,10 +418,10 @@ export function PeopleRolesCard() {
             {errors.email && (
               <p className="mt-1 text-[10px] text-red-600">{errors.email.message}</p>
             )}
-          </div>
+          </div> */}
 
           {/* Temporary password */}
-          <div className="w-full md:w-36">
+          {/* <div className="w-full md:w-36">
             <input
               type="text"
               placeholder="temporary password"
@@ -367,10 +443,10 @@ export function PeopleRolesCard() {
                 {errors.temporaryPassword.message}
               </p>
             )}
-          </div>
+          </div> */}
 
           {/* Role select */}
-          <div className="relative w-full md:w-28 shrink-0">
+          {/* <div className="relative w-full md:w-28 shrink-0">
             <select
               {...register('role')}
               className="w-full appearance-none px-3 py-1.5 pr-7 rounded-lg border outline-none text-xs font-medium cursor-pointer focus:border-[#8c7b64] transition-colors"
@@ -400,10 +476,10 @@ export function PeopleRolesCard() {
                 <polyline points="1 1 5 5 9 1" />
               </svg>
             </div>
-          </div>
+          </div> */}
 
           {/* Create account button */}
-          <div className="w-full md:w-auto shrink-0">
+          {/* <div className="w-full md:w-auto shrink-0">
             <button
               type="submit"
               disabled={isSubmitting}
@@ -412,9 +488,10 @@ export function PeopleRolesCard() {
             >
               {isSubmitting ? 'Creating...' : 'Create account'}
             </button>
-          </div>
-        </div>
-      </form>
+          </div> */}
+        {/* </div>
+      </form> */}
+      
 
       {/* Users List with divider */}
       {isLoading ? (
@@ -557,7 +634,7 @@ export function PeopleRolesCard() {
 
                   <button
                     type="button"
-                    onClick={() => handleResetPassword(user)}
+                    onClick={() => requestResetPassword(user)}
                     disabled={processingId === user.id}
                     className="px-2.5 py-1 rounded-lg border border-[#ccc4ae] text-[11px] font-medium text-[#554e42] hover:bg-[#ece3d2] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                     style={{ fontFamily: "'DM Sans', sans-serif" }}
@@ -569,6 +646,62 @@ export function PeopleRolesCard() {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {resetTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => {
+              if (processingId === null) setResetTarget(null)
+            }}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="reset-password-title"
+            className="relative w-full max-w-sm rounded-2xl bg-[#f5f0e8] border border-[#e2d9c8] shadow-2xl p-6"
+          >
+            <div className="w-11 h-11 rounded-full bg-[#f3e3c8] text-[#a07840] flex items-center justify-center mb-4">
+              <KeyRound className="w-5 h-5" />
+            </div>
+            <h3
+              id="reset-password-title"
+              className="text-lg font-bold text-[#1c1a17]"
+              style={{ fontFamily: "'Fraunces', Georgia, serif" }}
+            >
+              Reset password?
+            </h3>
+            <p className="mt-2 text-xs leading-relaxed text-[#6b6253]">
+              Are you sure you want to reset the password for{' '}
+              <span className="font-semibold text-[#1c1a17]">
+                {resetTarget.name}
+              </span>
+              ? A new temporary password will be generated and the current one
+              will stop working.
+            </p>
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setResetTarget(null)}
+                disabled={processingId !== null}
+                className="px-3.5 py-2 rounded-lg text-xs font-semibold text-[#554e42] bg-[#ede8de] border border-[#ccc4ae] hover:bg-[#e4ddcf] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmResetPassword}
+                disabled={processingId !== null}
+                className="px-3.5 py-2 rounded-lg text-xs font-semibold bg-[#1c1a17] text-[#f5f0e8] hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {processingId === resetTarget.id
+                  ? 'Resetting…'
+                  : 'Yes, reset password'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </section>

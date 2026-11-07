@@ -59,75 +59,76 @@ export function TreeTopBar({
   }
 
   return (
-    <header className="h-14 sm:h-16 px-4 sm:px-6 bg-[#f5ede1] border-b border-[#ded4c1] flex items-center justify-between gap-3 shrink-0 z-20 select-none">
-      {/* Left Section: Mobile Menu + Branch Selector + User Info */}
-      <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-        {/* Mobile Sidebar Toggle Button */}
-        <button
-          onClick={onToggleSidebarMobile}
-          className="sm:hidden p-2 rounded-xl text-[#3a2f21] hover:bg-[#eae0cf] active:bg-[#dfd3be] transition-colors"
-          title="Open Menu & Search"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
-
-        {/* Branch Switcher Tabs */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#e8ded0] border border-[#d8ccbb]">
+    <header className="bg-[#f5ede1] border-b border-[#ded4c1] shrink-0 z-20 select-none">
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5 px-3 py-2 sm:h-16 sm:flex-nowrap sm:gap-x-4 sm:px-6 sm:py-0">
+        {/* Left Section: Mobile Menu + Branch Selector + User Info */}
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+          {/* Mobile Sidebar Toggle Button */}
           <button
-            onClick={() => onSelectBranch('Egypt')}
-            className={`inline-flex items-center gap-1 px-3.5 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-150 ${
-              activeBranch === 'Egypt'
-                ? 'bg-[#1c1a17] text-white shadow-xs'
-                : 'text-[#4d4233] hover:text-[#1c1a17] hover:bg-[#dfd4c4]'
-            }`}
+            onClick={onToggleSidebarMobile}
+            className="sm:hidden shrink-0 p-2 rounded-xl text-[#3a2f21] hover:bg-[#eae0cf] active:bg-[#dfd3be] transition-colors"
+            title="Open Menu & Search"
           >
-            {lockedBranches.includes('Egypt') && <Lock className="w-3 h-3" />}
-            Egypt
+            <Menu className="w-5 h-5" />
           </button>
 
-          <button
-            onClick={() => onSelectBranch('Jordan')}
-            className={`inline-flex items-center gap-1 px-3.5 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-150 ${
-              activeBranch === 'Jordan'
-                ? 'bg-[#1c1a17] text-white shadow-xs'
-                : 'text-[#4d4233] hover:text-[#1c1a17] hover:bg-[#dfd4c4]'
-            }`}
-          >
-            {lockedBranches.includes('Jordan') && <Lock className="w-3 h-3" />}
-            Jordan
-          </button>
+          {/* Branch Switcher Tabs */}
+          <div className="flex shrink-0 items-center gap-1 sm:gap-1.5 p-1 rounded-xl bg-[#e8ded0] border border-[#d8ccbb]">
+            <button
+              onClick={() => onSelectBranch('Egypt')}
+              className={`inline-flex items-center gap-1 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-150 ${
+                activeBranch === 'Egypt'
+                  ? 'bg-[#1c1a17] text-white shadow-xs'
+                  : 'text-[#4d4233] hover:text-[#1c1a17] hover:bg-[#dfd4c4]'
+              }`}
+            >
+              {lockedBranches.includes('Egypt') && <Lock className="w-3 h-3" />}
+              Egypt
+            </button>
+
+            <button
+              onClick={() => onSelectBranch('Jordan')}
+              className={`inline-flex items-center gap-1 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-150 ${
+                activeBranch === 'Jordan'
+                  ? 'bg-[#1c1a17] text-white shadow-xs'
+                  : 'text-[#4d4233] hover:text-[#1c1a17] hover:bg-[#dfd4c4]'
+              }`}
+            >
+              {lockedBranches.includes('Jordan') && <Lock className="w-3 h-3" />}
+              Jordan
+            </button>
+          </div>
+
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="inline-flex shrink-0 items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#4d4233] bg-[#e8ded0] hover:bg-[#dfd4c4] transition-colors"
+              title={backLabel}
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{backLabel}</span>
+            </button>
+          )}
+
+          {/* User Identity Display */}
+          {token && userName && (
+            <div className="hidden md:flex items-center gap-1.5 text-xs text-[#7d705d] truncate">
+              <span className="font-semibold text-[#3b3225]">{userName}</span>
+              {userRole && (
+                <>
+                  <span className="text-[#a49683]">·</span>
+                  <span className="font-medium text-[#7d705d] flex items-center gap-1">
+                    <Shield className="w-3 h-3 text-[#9b8054]" />
+                    {userRole}
+                  </span>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#4d4233] bg-[#e8ded0] hover:bg-[#dfd4c4] transition-colors"
-            title={backLabel}
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{backLabel}</span>
-          </button>
-        )}
-
-        {/* User Identity Display */}
-        {token && userName && (
-          <div className="hidden md:flex items-center gap-1.5 text-xs text-[#7d705d] truncate">
-            <span className="font-semibold text-[#3b3225]">{userName}</span>
-            {userRole && (
-              <>
-                <span className="text-[#a49683]">·</span>
-                <span className="font-medium text-[#7d705d] flex items-center gap-1">
-                  <Shield className="w-3 h-3 text-[#9b8054]" />
-                  {userRole}
-                </span>
-              </>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Right Section: Mobile Search shortcut, Workspace link, Sign in / Sign out */}
-      <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+        {/* Right Section: Mobile Search shortcut, Workspace link, Sign in / Sign out */}
+        <div className="ml-auto flex items-center gap-2 sm:ml-0 sm:gap-4 shrink-0">
         {/* View mode toggle for mobile & tablet (Tree Canvas vs Indexed List) */}
         {onToggleListView && (
           <button
@@ -165,6 +166,7 @@ export function TreeTopBar({
             Sign in
           </Link>
         )}
+        </div>
       </div>
     </header>
   )

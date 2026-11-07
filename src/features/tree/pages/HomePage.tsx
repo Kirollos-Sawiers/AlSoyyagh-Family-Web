@@ -498,7 +498,10 @@ export function HomePage() {
           )}
 
           {scope.type === 'focus' && (
-            <div dir="rtl" className="absolute top-3 left-3 z-10 px-3 py-1.5 rounded-lg bg-white/85 backdrop-blur-md border border-[#dec9ad] text-[11px] font-semibold text-[#554e42] shadow-xs">
+            <div
+              dir="rtl"
+              className="absolute z-10 bottom-4 left-1/2 -translate-x-1/2 max-w-[calc(100%-8rem)] truncate px-3 py-1.5 rounded-lg bg-white/85 backdrop-blur-md border border-[#dec9ad] text-[11px] font-semibold text-[#554e42] shadow-xs lg:bottom-auto lg:left-3 lg:top-3 lg:max-w-none lg:translate-x-0"
+            >
               Viewing children of: {scope.nodeName}
             </div>
           )}

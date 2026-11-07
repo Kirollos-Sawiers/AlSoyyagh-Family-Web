@@ -15,7 +15,8 @@ export interface TreeConnection {
   fromY: number
   toX: number
   toY: number
-  type: 'parent-child' | 'spouse'
+  type: 'parent-child' | 'spouse' | 'sibling' | 'lineage'
+  path?: string
 }
 
 export interface GenerationGuide {
@@ -115,6 +116,8 @@ export function computeTreeLayout(
     }
   }
 
+  // Each child is linked to its father (or parent couple) with its own smooth
+  // S-curve, so every sibling branch flows independently out of the parent.
   for (const node of nodes) {
     const parentIds = node.person.parentIds || []
     if (parentIds.length === 0) continue
@@ -138,13 +141,17 @@ export function computeTreeLayout(
       parentCenterY = Math.max(...parentNodes.map((p) => p.y + p.height))
     }
 
+    const childCenterX = node.x + node.width / 2
+    const midY = (parentCenterY + node.y) / 2
+
     connections.push({
       id: `child-${node.person.id}`,
       fromX: parentCenterX,
       fromY: parentCenterY,
-      toX: node.x + node.width / 2,
+      toX: childCenterX,
       toY: node.y,
       type: 'parent-child',
+      path: `M ${parentCenterX} ${parentCenterY} C ${parentCenterX} ${midY}, ${childCenterX} ${midY}, ${childCenterX} ${node.y}`,
     })
   }
 

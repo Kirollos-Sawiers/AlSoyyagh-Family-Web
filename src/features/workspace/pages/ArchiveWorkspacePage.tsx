@@ -5,6 +5,7 @@ import { RecentSuggestionsCard, type SuggestionItem } from '../components/Recent
 import { MembershipRequestsCard } from '../components/MembershipRequestsCard'
 import { AccessRequestsCard } from '../components/AccessRequestsCard'
 import { PeopleRolesCard } from '../components/PeopleRolesCard'
+import { ExportMembersCard } from '../components/ExportMembersCard'
 import { getJoinRequests, refreshCurrentUser, type JoinRequest } from '../../../services/api'
 import {
   getChangeRequests,
@@ -32,11 +33,13 @@ export function ArchiveWorkspacePage() {
   const [suggestions, setSuggestions] = useState<SuggestionItem[]>([])
   const [reloadKey, setReloadKey] = useState(0)
   const [roleLabel, setRoleLabel] = useState('ADMIN')
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false)
 
   useEffect(() => {
     let isMounted = true
     const updateRole = (role?: string) => {
       const normalized = String(role || '').toUpperCase()
+      setIsSuperAdmin(normalized === 'SUPER_ADMIN')
       if (normalized === 'SUPER_ADMIN') setRoleLabel('SUPER ADMIN')
       else if (normalized === 'ADMIN') setRoleLabel('ADMIN')
       else if (normalized) setRoleLabel(normalized)
@@ -156,6 +159,9 @@ export function ArchiveWorkspacePage() {
 
         {/* Section 5: People & roles */}
         <PeopleRolesCard />
+
+        {/* Section 6: Export members (Super Admin only) */}
+        {isSuperAdmin && <ExportMembersCard />}
       </div>
     </div>
   )

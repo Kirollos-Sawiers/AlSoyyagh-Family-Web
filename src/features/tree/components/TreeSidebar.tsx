@@ -48,7 +48,7 @@ export function TreeSidebar({
       : [1, 2, 3, 4, 5, 6, 7]
 
   return (
-    <aside className="w-full sm:w-[320px] md:w-[335px] h-full flex flex-col justify-between p-4 sm:p-5 bg-[#f5ede1] border-r border-[#ded4c1] overflow-y-auto select-none shrink-0 shadow-[4px_0_16px_rgba(40,30,10,0.03)] z-30">
+    <aside className="w-full sm:w-[320px] md:w-83.75 h-full flex flex-col justify-between p-4 sm:p-5 bg-[#f5ede1] border-r border-[#ded4c1] overflow-y-auto select-none shrink-0 shadow-[4px_0_16px_rgba(40,30,10,0.03)] z-30">
       <div className="space-y-6">
         {/* Mobile Header with Close button if inside mobile drawer */}
         <div className="flex items-center justify-between sm:hidden pb-1">
@@ -239,7 +239,7 @@ export function TreeSidebar({
 
       {/* Footer copyright */}
       <div className="pt-4 border-t border-[#ded4c1] mt-6 flex items-center justify-between text-[11px] text-[#8c7e6c]">
-        <span>Al-Suyyagh Lineage</span>
+        <span>Al-Soyyagh Lineage</span>
         <span>Est. 1802</span>
       </div>
     </aside>

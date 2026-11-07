@@ -316,17 +316,6 @@ export function TreeCanvas({
           className="absolute inset-0 w-full h-full pointer-events-none"
           style={{ width: `${contentWidth}px`, height: `${contentHeight}px` }}
         >
-          <defs>
-            <linearGradient id="treeLineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#ab9471" stopOpacity="0.85" />
-              <stop offset="100%" stopColor="#8d7450" stopOpacity="0.9" />
-            </linearGradient>
-            <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="0.8" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
-          </defs>
-
           {layout.connections.map((conn) => {
             if (conn.type === 'spouse') {
               // Direct horizontal link between partners
@@ -344,19 +333,32 @@ export function TreeCanvas({
               )
             }
 
-            // Smooth cubic bezier curve from parent union to child
-            const midY = (conn.fromY + conn.toY) / 2
-            const pathData = `M ${conn.fromX} ${conn.fromY} C ${conn.fromX} ${midY}, ${conn.toX} ${midY}, ${conn.toX} ${conn.toY}`
+            // Smooth rounded lineage paths with curved sibling turns.
+            if (conn.path) {
+              return (
+                <path
+                  key={conn.id}
+                  d={conn.path}
+                  fill="none"
+                  stroke="#a68b63"
+                  strokeWidth={conn.type === 'lineage' ? 1.9 : 1.7}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              )
+            }
 
+            // Fallback for simple straight drops.
             return (
-              <path
+              <line
                 key={conn.id}
-                d={pathData}
-                fill="none"
-                stroke="url(#treeLineGradient)"
-                strokeWidth="1.85"
+                x1={conn.fromX}
+                y1={conn.fromY}
+                x2={conn.toX}
+                y2={conn.toY}
+                stroke="#a68b63"
+                strokeWidth={1.7}
                 strokeLinecap="round"
-                filter="url(#softGlow)"
               />
             )
           })}

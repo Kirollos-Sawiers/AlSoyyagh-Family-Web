@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Eye, EyeOff } from 'lucide-react'
 import logo from '../../../assets/alsoyyagh.jpg'
 import { useLoginForm } from '../hooks/useLoginForm'
 
 export function LoginPage() {
   const { form, onSubmit } = useLoginForm()
+  const [showPassword, setShowPassword] = useState(false)
   const {
     register,
     handleSubmit,
@@ -100,22 +103,34 @@ export function LoginPage() {
             >
               Password
             </label>
-            <input
-              id="login-password"
-              type="password"
-              autoComplete="current-password"
-              {...register('password')}
-              className={`w-full px-3 py-2.5 rounded-lg border outline-none transition-all duration-200 text-sm ${errors.password
-                  ? 'border-red-400 focus:ring-2 focus:ring-red-200'
-                  : 'focus:ring-2 focus:ring-amber-300'
-                }`}
-              style={{
-                backgroundColor: '#ede8de',
-                borderColor: errors.password ? undefined : '#ccc4ae',
-                color: '#1c1a17',
-                fontFamily: 'Inter, sans-serif',
-              }}
-            />
+            <div className="relative">
+              <input
+                id="login-password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                {...register('password')}
+                className={`w-full px-3 py-2.5 pr-10 rounded-lg border outline-none transition-all duration-200 text-sm ${errors.password
+                    ? 'border-red-400 focus:ring-2 focus:ring-red-200'
+                    : 'focus:ring-2 focus:ring-amber-300'
+                  }`}
+                style={{
+                  backgroundColor: '#ede8de',
+                  borderColor: errors.password ? undefined : '#ccc4ae',
+                  color: '#1c1a17',
+                  fontFamily: 'Inter, sans-serif',
+                }}
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-[#8a7f6e] transition-opacity hover:opacity-60"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
             {errors.password && (
               <p className="mt-1 text-xs text-red-500" style={{ fontFamily: 'Inter, sans-serif' }}>
                 {errors.password.message}
